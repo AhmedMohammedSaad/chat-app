@@ -1,30 +1,34 @@
+import 'package:chatapp/home/model/messages.dart';
+import 'package:chatapp/home/model/user_model.dart';
+
 class ChatItemModel {
+  final String id;
   final String? name;
   final String? image;
-  final String? message;
-  final String? time;
-  final String? unreadCount;
+  final List<Messages> message;
+
+  final List<dynamic>? users;
   ChatItemModel({
+    required this.id,
     required this.name,
     required this.image,
     required this.message,
-    required this.time,
-    required this.unreadCount,
+
+    required this.users,
   });
+  factory ChatItemModel.fromJson(
+    Map<String, dynamic> json,
+    UserModel userModel,
+    String id,
+  ) {
+    final rawMessages = json["messages"] as List? ?? [];
 
-  factory ChatItemModel.fromJson(Map<String, dynamic> json) => ChatItemModel(
-    name: json["name"],
-    image: json["image"],
-    message: json["message"],
-    time: json["time"],
-    unreadCount: json["unreadCount"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "name": name,
-    "image": image,
-    "message": message,
-    "time": time,
-    "unreadCount": unreadCount,
-  };
+    return ChatItemModel(
+      id: id,
+      name: userModel.name,
+      image: userModel.image ?? "",
+      message: rawMessages.map((e) => Messages.fromJson(e)).toList(),
+      users: List<String>.from(json["users"] ?? []),
+    );
+  }
 }

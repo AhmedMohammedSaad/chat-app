@@ -110,10 +110,10 @@ class LoginScreen extends StatelessWidget {
                   BlocConsumer<AuthCubit, AuthState>(
                     listener: (context, state) {
                       if (state is LoginSuccess) {
-                        print("login success");
+                        debugPrint("login success");
                       }
                       if (state is LoginFailure) {
-                        print(state.errorMessage);
+                        debugPrint(state.errorMessage);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(state.errorMessage)),
                         );

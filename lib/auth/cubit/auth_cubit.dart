@@ -1,9 +1,8 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chatapp/auth/view/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:meta/meta.dart';
 
 part 'auth_state.dart';
 
@@ -40,10 +39,12 @@ class AuthCubit extends Cubit<AuthState> {
       final user = instance.currentUser!.uid;
       // 3 set data in firestore
       await FirebaseFirestore.instance.collection("user").doc(user).set({
+        "id": user,
         "name": nameController.text,
         "email": emailController.text,
       });
       //!
+      if (!context.mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),

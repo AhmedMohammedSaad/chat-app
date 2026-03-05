@@ -1,5 +1,9 @@
 import 'package:chatapp/home/model/chat_item_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+import 'package:chatapp/chat/view/chat_screen.dart';
+import 'package:intl/intl.dart';
 
 class ItemChat extends StatelessWidget {
   const ItemChat({super.key, required this.chatItemModel});
@@ -7,46 +11,59 @@ class ItemChat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(5),
-      height: 80,
-      width: MediaQuery.of(context).size.width / 1,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Color(0xff771F98), width: 2),
-      ),
-      child: ListTile(
-        leading: CircleAvatar(
-          radius: 30,
-          backgroundImage: NetworkImage(
-            chatItemModel.image ??
-                "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(
+              chatId: chatItemModel.id,
+              otherUserName: chatItemModel.name ?? "Unknown",
+              otherUserImage:
+                  (chatItemModel.image == null || chatItemModel.image!.isEmpty)
+                  ? "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  : chatItemModel.image!,
+            ),
           ),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.all(5),
+        height: 80,
+        width: MediaQuery.of(context).size.width / 1,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: Color(0xff771F98), width: 2),
         ),
-        title: Text(chatItemModel.name ?? "Ahmed"),
-        subtitle: Text(
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          chatItemModel.message ?? "hello",
-        ),
-        trailing: Column(
-          children: [
-            Text(
-              chatItemModel.time ?? "10:00 AM",
-              style: TextStyle(fontSize: 12),
+        child: ListTile(
+          leading: CircleAvatar(
+            radius: 30,
+            backgroundImage: NetworkImage(
+              (chatItemModel.image == null || chatItemModel.image!.isEmpty)
+                  ? "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                  : chatItemModel.image!,
             ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xff771F98),
+          ),
+          title: Text(chatItemModel.name.toString()),
+          subtitle: Text(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            chatItemModel.message.isNotEmpty
+                ? chatItemModel.message.last.text.toString()
+                : "No messages yet",
+          ),
+          trailing: Column(
+            children: [
+              Text(
+                chatItemModel.message.isNotEmpty
+                    ? DateFormat('h:mm a').format(
+                        DateTime.parse(chatItemModel.message.last.time ?? ""),
+                      )
+                    : "",
+                style: TextStyle(fontSize: 12),
               ),
-              child: Text(
-                chatItemModel.unreadCount ?? "1",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
