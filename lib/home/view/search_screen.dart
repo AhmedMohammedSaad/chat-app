@@ -1,9 +1,7 @@
-import 'package:chatapp/home/model/user_model.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chatapp/chat/chat_screen.dart';
+import 'package:chatapp/home/cubit/cubit_search/search_cubit.dart';
 import 'package:flutter/material.dart';
-
-import 'package:chatapp/chat/view/chat_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -13,141 +11,104 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  String searchQuery = "";
-
-  void _createOrNavigateToChat(UserModel user) async {
-    final currentUserId = FirebaseAuth.instance.currentUser!.uid;
-
-    // Check if chat existed
-    final chatsQuery = await FirebaseFirestore.instance
-        .collection('chats')
-        .where('users', arrayContains: currentUserId)
-        .get();
-
-    String? existingChatId;
-
-    for (var doc in chatsQuery.docs) {
-      final users = List<String>.from(doc['users'] ?? []);
-      if (users.contains(user.id)) {
-        existingChatId = doc.id;
-        break;
-      }
-    }
-
-    if (!mounted) return;
-
-    if (existingChatId != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ChatScreen(
-            chatId: existingChatId!,
-            otherUserName: user.name,
-            otherUserImage: (user.image == null || user.image!.isEmpty)
-                ? "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                : user.image!,
-          ),
-        ),
-      );
-    } else {
-      // Create new chat
-      final newChatRef = FirebaseFirestore.instance.collection('chats').doc();
-      await newChatRef.set({
-        'users': [currentUserId, user.id],
-        'messages': [],
-      });
-
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ChatScreen(
-            chatId: newChatRef.id,
-            otherUserName: user.name,
-            otherUserImage: (user.image == null || user.image!.isEmpty)
-                ? "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                : user.image!,
-          ),
-        ),
-      );
-    }
+  final TextEditingController controller = TextEditingController();
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-          autofocus: true,
-          onChanged: (val) {
-            setState(() {
-              searchQuery = val.trim();
-            });
-          },
-          decoration: InputDecoration(
-            hintText: "Search for users...",
-            border: InputBorder.none,
+    return BlocProvider(
+      create: (context) => SearchCubit(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Builder(
+            builder: (context) {
+              return TextField(
+                onSubmitted: (value) {
+                  context.read<SearchCubit>().searchUser(
+                    controller.text.trim(),
+                  );
+                },
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: 'Search .....',
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      context.read<SearchCubit>().searchUser(
+                        controller.text.trim(),
+                      );
+                    },
+                    icon: Icon(Icons.search),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              );
+            },
           ),
         ),
-      ),
-      body: searchQuery.isEmpty
-          ? Center(child: Text("Search by name"))
-          : StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('user')
-                  .where('name', isGreaterThanOrEqualTo: searchQuery)
-                  .where('name', isLessThanOrEqualTo: '$searchQuery\uf8ff')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+        body: BlocListener<SearchCubit, SearchState>(
+          listener: (context, state) {
+            if (state is ChatStared) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                    chatId: state.chatId,
+                    otherUserName: state.otherUser.name,
+                  ),
+                ),
+              );
+            }
+          },
+          child: BlocBuilder<SearchCubit, SearchState>(
+            builder: (context, state) {
+              if (state is SearchLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (state is SearchFailure) {
+                return Center(child: Text(state.errorMessage));
+              }
+              if (state is SearchSuccess) {
+                if (state.users.isEmpty) {
+                  return Center(child: Text("no Users"));
                 }
-
-                if (snapshot.hasError) {
-                  return Center(child: Text("An error occurred"));
-                }
-
-                final users =
-                    snapshot.data?.docs.map((e) {
-                      return UserModel.fromJson(
-                        e.data() as Map<String, dynamic>,
-                        docId: e.id,
-                      );
-                    }).toList() ??
-                    [];
-
-                // Filter out current user
-                final filteredUsers = users
-                    .where(
-                      (user) =>
-                          user.id != FirebaseAuth.instance.currentUser!.uid,
-                    )
-                    .toList();
-
-                if (filteredUsers.isEmpty) {
-                  return Center(child: Text("No users found"));
-                }
-
                 return ListView.builder(
-                  itemCount: filteredUsers.length,
+                  itemCount: state.users.length,
                   itemBuilder: (context, index) {
-                    final user = filteredUsers[index];
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          (user.image == null || user.image!.isEmpty)
-                              ? "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                              : user.image!,
-                        ),
+                    return Container(
+                      margin: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: const Color.fromARGB(255, 81, 6, 179),
                       ),
-                      title: Text(user.name),
-                      subtitle: Text(user.email),
-                      onTap: () => _createOrNavigateToChat(user),
+                      child: ListTile(
+                        title: Text(
+                          state.users[index].name,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        leading: Icon(Icons.person),
+                        onTap: () {
+                          context.read<SearchCubit>().startChat(
+                            state.users[index],
+                          );
+                        },
+                      ),
                     );
                   },
                 );
-              },
-            ),
+              } else {
+                return SizedBox.shrink();
+              }
+            },
+          ),
+        ),
+      ),
     );
   }
 }

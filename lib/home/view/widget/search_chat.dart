@@ -1,5 +1,5 @@
+import 'package:chatapp/home/view/search_screen.dart';
 import 'package:flutter/material.dart';
-import '../search_screen.dart';
 
 class SearchChat extends StatelessWidget {
   const SearchChat({super.key});
@@ -13,7 +13,7 @@ class SearchChat extends StatelessWidget {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SearchScreen()),
+                MaterialPageRoute(builder: (ctx) => SearchScreen()),
               );
             },
             child: Container(

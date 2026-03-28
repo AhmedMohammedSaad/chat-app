@@ -1,7 +1,7 @@
+import 'package:chatapp/chat/chat_screen.dart';
 import 'package:chatapp/home/model/chat_item_model.dart';
 import 'package:flutter/material.dart';
 
-import 'package:chatapp/chat/view/chat_screen.dart';
 import 'package:intl/intl.dart';
 
 class ItemChat extends StatelessWidget {
@@ -17,11 +17,7 @@ class ItemChat extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => ChatScreen(
               chatId: chatItemModel.id,
-              otherUserName: chatItemModel.name ?? "Unknown",
-              otherUserImage:
-                  (chatItemModel.image == null || chatItemModel.image!.isEmpty)
-                  ? "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                  : chatItemModel.image!,
+              otherUserName: chatItemModel.name ?? "",
             ),
           ),
         );
