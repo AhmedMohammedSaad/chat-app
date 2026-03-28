@@ -2,6 +2,7 @@ import 'package:chatapp/chat/chat_screen.dart';
 import 'package:chatapp/home/cubit/cubit_search/search_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/theme/theme_extension.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -12,6 +13,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController controller = TextEditingController();
+
   @override
   void dispose() {
     controller.dispose();
@@ -20,31 +22,58 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final textStyles = context.textStyles;
+
     return BlocProvider(
       create: (context) => SearchCubit(),
       child: Scaffold(
+        backgroundColor: colors.background,
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: colors.textPrimary),
+            onPressed: () => Navigator.pop(context),
+          ),
           title: Builder(
             builder: (context) {
-              return TextField(
-                onSubmitted: (value) {
-                  context.read<SearchCubit>().searchUser(
-                    controller.text.trim(),
-                  );
-                },
-                controller: controller,
-                decoration: InputDecoration(
-                  hintText: 'Search .....',
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      context.read<SearchCubit>().searchUser(
-                        controller.text.trim(),
-                      );
-                    },
-                    icon: Icon(Icons.search),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+              return Container(
+                height: 45,
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: colors.primaryBorder.withValues(alpha: 0.4)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.primary.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  controller: controller,
+                  style: textStyles.textButtonPrimary.copyWith(color: colors.textPrimary),
+                  onSubmitted: (value) {
+                    context.read<SearchCubit>().searchUser(controller.text.trim());
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Search users...',
+                    hintStyle: textStyles.labelText.copyWith(
+                      color: colors.textSecondary.withValues(alpha: 0.5),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        context.read<SearchCubit>().searchUser(controller.text.trim());
+                      },
+                      icon: Icon(Icons.search, color: colors.primary),
+                    ),
                   ),
                 ),
               );
@@ -68,42 +97,112 @@ class _SearchScreenState extends State<SearchScreen> {
           child: BlocBuilder<SearchCubit, SearchState>(
             builder: (context, state) {
               if (state is SearchLoading) {
-                return const Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(color: colors.primary),
+                );
               }
 
               if (state is SearchFailure) {
-                return Center(child: Text(state.errorMessage));
+                return Center(
+                  child: Text(
+                    state.errorMessage,
+                    style: textStyles.labelText.copyWith(color: Colors.red),
+                  ),
+                );
               }
+
               if (state is SearchSuccess) {
                 if (state.users.isEmpty) {
-                  return Center(child: Text("no Users"));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off,
+                            size: 60,
+                            color: colors.textSecondary.withValues(alpha: 0.3)),
+                        const SizedBox(height: 16),
+                        Text("No users found", style: textStyles.headerSecondary),
+                      ],
+                    ),
+                  );
                 }
+
                 return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   itemCount: state.users.length,
                   itemBuilder: (context, index) {
+                    final user = state.users[index];
                     return Container(
-                      margin: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
-                        color: const Color.fromARGB(255, 81, 6, 179),
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: colors.primaryBorder.withValues(alpha: 0.4)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: ListTile(
-                        title: Text(
-                          state.users[index].name,
-                          style: TextStyle(color: Colors.white),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          highlightColor: colors.primary.withValues(alpha: 0.1),
+                          splashColor: colors.secondary.withValues(alpha: 0.1),
+                          onTap: () {
+                            context.read<SearchCubit>().startChat(user);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: colors.primaryGradient,
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 24,
+                                    backgroundColor: colors.surface,
+                                    child: Icon(
+                                      Icons.person,
+                                      color: colors.primary,
+                                      size: 24,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    user.name,
+                                    style: textStyles.textButtonPrimary.copyWith(
+                                      color: colors.textPrimary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.chat_bubble_outline,
+                                  color: colors.primary.withValues(alpha: 0.7),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                            ),
+                          ),
                         ),
-                        leading: Icon(Icons.person),
-                        onTap: () {
-                          context.read<SearchCubit>().startChat(
-                            state.users[index],
-                          );
-                        },
                       ),
                     );
                   },
                 );
               } else {
-                return SizedBox.shrink();
+                return const SizedBox.shrink();
               }
             },
           ),

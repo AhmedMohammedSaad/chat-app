@@ -2,179 +2,147 @@ import 'package:chatapp/auth/cubit/auth_cubit.dart';
 import 'package:chatapp/auth/view/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/theme/theme_extension.dart';
+import '../../core/presentation/view/widgets/app_text_field.dart';
+import '../../core/presentation/view/widgets/app_gradient_button.dart';
+import '../../core/presentation/view/widgets/app_glass_container.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final textStyles = context.textStyles;
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: SingleChildScrollView(
-            child: Form(
-              key: formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  /// Back Button
-                  const SizedBox(height: 30),
-
-                  /// Header + Image
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              "Hello, Welcome Back",
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              "Happy to see you again, to use your\naccount please login first.",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  /// Email
-                  const Text("Email Address", style: TextStyle(fontSize: 14)),
-                  const SizedBox(height: 8),
-                  _buildTextField(
-                    controller: context.read<AuthCubit>().emailControllerLogin,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  /// Password
-                  const Text("Password", style: TextStyle(fontSize: 14)),
-                  const SizedBox(height: 8),
-                  _buildTextField(
-                    isPassword: true,
-                    controller: context
-                        .read<AuthCubit>()
-                        .passworedControllerLogin,
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  /// Forgot Password
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "Forgot Password",
-                          style: TextStyle(color: Colors.red, fontSize: 13),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SignUpScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Don't have an account? SignUp",
-                          style: TextStyle(color: Colors.red, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  /// Login Button
-                  BlocConsumer<AuthCubit, AuthState>(
-                    listener: (context, state) {
-                      if (state is LoginSuccess) {
-                        debugPrint("login success");
-                      }
-                      if (state is LoginFailure) {
-                        debugPrint(state.errorMessage);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(state.errorMessage)),
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      return SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7B1FA2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          onPressed: () {
-                            context.read<AuthCubit>().logIn();
-                          },
-                          child: state is LoginLoading
-                              ? Center(child: CircularProgressIndicator())
-                              : const Text(
-                                  "Login",
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  /// Divider
-                  const SizedBox(height: 40),
-                ],
+      backgroundColor: colors.background,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -50,
+            left: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.primary.withValues(alpha: 0.35),
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
+          Positioned(
+            bottom: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: colors.accentBlue.withValues(alpha: 0.25),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: AppGlassContainer(
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Welcome Back!",
+                            style: textStyles.headerPrimary,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Login to continue and connect with your friends.",
+                            style: textStyles.headerSecondary,
+                          ),
+                          const SizedBox(height: 40),
 
-  static Widget _buildTextField({
-    bool isPassword = false,
-    required TextEditingController controller,
-  }) {
-    return TextField(
-      controller: controller,
-      obscureText: isPassword,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: const Color.fromARGB(255, 210, 209, 209),
+                          Text("Email Address", style: textStyles.labelText),
+                          const SizedBox(height: 8),
+                          AppTextField(
+                            hint: "Enter your email",
+                            controller: context.read<AuthCubit>().emailControllerLogin,
+                          ),
+                          const SizedBox(height: 20),
 
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
+                          Text("Password", style: textStyles.labelText),
+                          const SizedBox(height: 8),
+                          AppTextField(
+                            hint: "Enter your password",
+                            isPassword: true,
+                            controller:
+                                context.read<AuthCubit>().passworedControllerLogin,
+                          ),
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () {},
+                              child: Text(
+                                "Forgot Password?",
+                                style: textStyles.textButtonAction,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          BlocConsumer<AuthCubit, AuthState>(
+                            listener: (context, state) {
+                              if (state is LoginFailure) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(state.errorMessage)),
+                                );
+                              }
+                            },
+                            builder: (context, state) {
+                              return AppGradientButton(
+                                isLoading: state is LoginLoading,
+                                text: "Login",
+                                onPressed: () {
+                                  context.read<AuthCubit>().logIn();
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 30),
+
+                          Center(
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const SignUpScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Don't have an account? Sign Up",
+                                style: textStyles.textButtonPrimary.copyWith(
+                                  color: colors.textButtonAction,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
