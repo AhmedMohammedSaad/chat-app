@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:developer';
+import 'dart:io';
 
 import 'package:chatapp/home/model/chat_item_model.dart';
 import 'package:chatapp/home/model/user_model.dart';
@@ -6,12 +8,62 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(HomeInitial());
   StreamSubscription? streamSubscription;
+  final supabase = Supabase.instance.client;
+  final userId = FirebaseAuth.instance.currentUser!.uid;
+  Future<String?> uploadImage() async {
+    try {
+      final picker = ImagePicker();
+      final pickedfile = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (pickedfile == null) return null;
+      final file = File(pickedfile.path);
+      final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+
+      final path = 'user/$userId/$fileName.jpg';
+      await supabase.storage.from("images").upload(path, file);
+      // get urlimage
+      final url = supabase.storage.from("images").getPublicUrl(path);
+
+      log("url image $url");
+      await saveImageToFireStore(url);
+      return url;
+    } catch (e) {
+      debugPrint(e.toString());
+      return null;
+    }
+  }
+
+  Future<String?> getUserImage() async {
+    final files = await supabase.storage
+        .from("images")
+        .list(path: "user/$userId");
+    final images = files.map((file) {
+      return supabase.storage
+          .from("images")
+          .getPublicUrl("user/$userId/${file.name}");
+    }).toList();
+
+    return images.first;
+  }
+
+  Future saveImageToFireStore(String imageUrl) async {
+    try {
+      final userRef = FirebaseFirestore.instance.collection("user").doc(userId);
+      await userRef.update({"image": imageUrl});
+    } catch (e) {
+      debugPrint(e.toString());
+    }
+  }
 
   void getUserChats() {
     emit(GetChatLoading());
@@ -46,8 +98,10 @@ class HomeCubit extends Cubit<HomeState> {
                   return ChatItemModel.fromJson(data, otherUserDoc, doc.id);
                 }).toList();
                 chats = await Future.wait(docs);
-
-                if (!isClosed) emit(GetChatSuccess(chats: chats));
+                final imageUrl = await getUserImage();
+                if (!isClosed) {
+                  emit(GetChatSuccess(chats: chats, imageUrl: imageUrl));
+                }
               } catch (e) {
                 if (!isClosed) emit(GetChatFailure(errorMessage: e.toString()));
               }
