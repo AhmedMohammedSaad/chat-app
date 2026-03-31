@@ -33,18 +33,28 @@ class AppTheme {
           color: AppColors.darkThemeColors.textSecondary.withValues(alpha: 0.5),
         ),
         labelStyle: AppTextStyles.darkTextTheme.labelText,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: AppColors.darkThemeColors.primaryBorder),
+          borderSide: BorderSide(
+            color: AppColors.darkThemeColors.primaryBorder,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: AppColors.darkThemeColors.primaryBorder),
+          borderSide: BorderSide(
+            color: AppColors.darkThemeColors.primaryBorder,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: AppColors.darkThemeColors.primary, width: 2),
+          borderSide: BorderSide(
+            color: AppColors.darkThemeColors.primary,
+            width: 2,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
@@ -63,14 +73,9 @@ class AppTheme {
           elevation: 0,
         ),
       ),
-      iconTheme: IconThemeData(
-        color: AppColors.darkThemeColors.primary,
-      ),
+      iconTheme: IconThemeData(color: AppColors.darkThemeColors.primary),
       useMaterial3: true,
-      extensions: [
-        AppColors.darkThemeColors,
-        AppTextStyles.darkTextTheme,
-      ],
+      extensions: [AppColors.darkThemeColors, AppTextStyles.darkTextTheme],
     );
   }
 
@@ -101,21 +106,33 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.lightThemeColors.surface,
         hintStyle: AppTextStyles.lightTextTheme.labelText.copyWith(
-          color: AppColors.lightThemeColors.textSecondary.withValues(alpha: 0.5),
+          color: AppColors.lightThemeColors.textSecondary.withValues(
+            alpha: 0.5,
+          ),
         ),
         labelStyle: AppTextStyles.lightTextTheme.labelText,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: AppColors.lightThemeColors.primaryBorder),
+          borderSide: BorderSide(
+            color: AppColors.lightThemeColors.primaryBorder,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: AppColors.lightThemeColors.primaryBorder),
+          borderSide: BorderSide(
+            color: AppColors.lightThemeColors.primaryBorder,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: AppColors.lightThemeColors.primary, width: 2),
+          borderSide: BorderSide(
+            color: AppColors.lightThemeColors.primary,
+            width: 2,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
@@ -134,14 +151,9 @@ class AppTheme {
           elevation: 0,
         ),
       ),
-      iconTheme: IconThemeData(
-        color: AppColors.lightThemeColors.primary,
-      ),
+      iconTheme: IconThemeData(color: AppColors.lightThemeColors.primary),
       useMaterial3: true,
-      extensions: [
-        AppColors.lightThemeColors,
-        AppTextStyles.lightTextTheme,
-      ],
+      extensions: [AppColors.lightThemeColors, AppTextStyles.lightTextTheme],
     );
   }
 }
