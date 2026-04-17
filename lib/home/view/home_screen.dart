@@ -156,6 +156,7 @@ class HomeScreen extends StatelessWidget {
                   child: BlocBuilder<HomeCubit, HomeState>(
                     builder: (context, state) {
                       if (state is GetChatFailure) {
+                        log(state.errorMessage);
                         return Center(
                           child: Text(
                             state.errorMessage,
@@ -202,8 +203,12 @@ class HomeScreen extends StatelessWidget {
                           padding: const EdgeInsets.only(bottom: 20),
                           itemBuilder: (context, index) {
                             final chat = chats[index];
+                            final chatRef = chats[index];
                             imageUrl = chat.image;
-                            return ItemChat(chatItemModel: chat);
+                            return ItemChat(
+                              chatItemModel: chat,
+                              chatRef: chatRef.id,
+                            );
                           },
                           separatorBuilder: (context, index) {
                             return const SizedBox(height: 8);

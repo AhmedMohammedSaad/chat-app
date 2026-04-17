@@ -43,7 +43,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 decoration: BoxDecoration(
                   color: colors.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: colors.primaryBorder.withValues(alpha: 0.4)),
+                  border: Border.all(
+                    color: colors.primaryBorder.withValues(alpha: 0.4),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: colors.primary.withValues(alpha: 0.05),
@@ -54,23 +56,31 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 child: TextField(
                   controller: controller,
-                  style: textStyles.textButtonPrimary.copyWith(color: colors.textPrimary),
+                  style: textStyles.textButtonPrimary.copyWith(
+                    color: colors.textPrimary,
+                  ),
                   onSubmitted: (value) {
-                    context.read<SearchCubit>().searchUser(controller.text.trim());
+                    context.read<SearchCubit>().searchUser(
+                      controller.text.trim(),
+                    );
                   },
                   decoration: InputDecoration(
                     hintText: 'Search users...',
                     hintStyle: textStyles.labelText.copyWith(
                       color: colors.textSecondary.withValues(alpha: 0.5),
                     ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                     border: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     suffixIcon: IconButton(
                       onPressed: () {
-                        context.read<SearchCubit>().searchUser(controller.text.trim());
+                        context.read<SearchCubit>().searchUser(
+                          controller.text.trim(),
+                        );
                       },
                       icon: Icon(Icons.search, color: colors.primary),
                     ),
@@ -117,18 +127,26 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.search_off,
-                            size: 60,
-                            color: colors.textSecondary.withValues(alpha: 0.3)),
+                        Icon(
+                          Icons.search_off,
+                          size: 60,
+                          color: colors.textSecondary.withValues(alpha: 0.3),
+                        ),
                         const SizedBox(height: 16),
-                        Text("No users found", style: textStyles.headerSecondary),
+                        Text(
+                          "No users found",
+                          style: textStyles.headerSecondary,
+                        ),
                       ],
                     ),
                   );
                 }
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
                   itemCount: state.users.length,
                   itemBuilder: (context, index) {
                     final user = state.users[index];
@@ -138,7 +156,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         color: colors.surface,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: colors.primaryBorder.withValues(alpha: 0.4)),
+                          color: colors.primaryBorder.withValues(alpha: 0.4),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: colors.primary.withValues(alpha: 0.05),
@@ -180,11 +199,12 @@ class _SearchScreenState extends State<SearchScreen> {
                                 Expanded(
                                   child: Text(
                                     user.name,
-                                    style: textStyles.textButtonPrimary.copyWith(
-                                      color: colors.textPrimary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+                                    style: textStyles.textButtonPrimary
+                                        .copyWith(
+                                          color: colors.textPrimary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
                                   ),
                                 ),
                                 Icon(

@@ -5,8 +5,13 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/theme_extension.dart';
 
 class ItemChat extends StatelessWidget {
-  const ItemChat({super.key, required this.chatItemModel});
+  const ItemChat({
+    super.key,
+    required this.chatItemModel,
+    required this.chatRef,
+  });
   final ChatItemModel chatItemModel;
+  final String chatRef;
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +19,13 @@ class ItemChat extends StatelessWidget {
     final textStyles = context.textStyles;
 
     final hasMessage = chatItemModel.message.isNotEmpty;
-    final lastMessage =
-        hasMessage ? chatItemModel.message.last.text.toString() : "No messages yet";
+    final lastMessage = hasMessage
+        ? chatItemModel.message.last.text.toString()
+        : "No messages yet";
     final timeStr = hasMessage
-        ? DateFormat('h:mm a').format(
-            DateTime.parse(chatItemModel.message.last.time ?? ""))
+        ? DateFormat(
+            'h:mm a',
+          ).format(DateTime.parse(chatItemModel.message.last.time ?? ""))
         : "";
 
     return Container(
@@ -47,6 +54,7 @@ class ItemChat extends StatelessWidget {
               MaterialPageRoute(
                 builder: (context) => ChatScreen(
                   chatId: chatItemModel.id,
+
                   otherUserName: chatItemModel.name ?? "",
                 ),
               ),
@@ -66,7 +74,8 @@ class ItemChat extends StatelessWidget {
                     radius: 26,
                     backgroundColor: colors.surface,
                     backgroundImage: NetworkImage(
-                      (chatItemModel.image == null || chatItemModel.image!.isEmpty)
+                      (chatItemModel.image == null ||
+                              chatItemModel.image!.isEmpty)
                           ? "https://cdn-icons-png.flaticon.com/512/149/149071.png"
                           : chatItemModel.image!,
                     ),
@@ -94,10 +103,7 @@ class ItemChat extends StatelessWidget {
                             ),
                           ),
                           if (timeStr.isNotEmpty)
-                            Text(
-                              timeStr,
-                              style: textStyles.chatTimeText,
-                            ),
+                            Text(timeStr, style: textStyles.chatTimeText),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -107,8 +113,9 @@ class ItemChat extends StatelessWidget {
                           color: hasMessage
                               ? colors.textSecondary
                               : colors.primary.withValues(alpha: 0.7),
-                          fontStyle:
-                              hasMessage ? FontStyle.normal : FontStyle.italic,
+                          fontStyle: hasMessage
+                              ? FontStyle.normal
+                              : FontStyle.italic,
                           fontSize: 13,
                         ),
                         maxLines: 1,

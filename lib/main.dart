@@ -7,6 +7,7 @@ import 'package:chatapp/core/theme/app_theme.dart';
 import 'package:chatapp/core/theme/cubit/theme_cubit.dart';
 import 'package:chatapp/core/theme/cubit/theme_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -21,7 +22,21 @@ void main() async {
       (await getApplicationDocumentsDirectory()).path,
     ),
   );
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    announcement: true,
+    badge: true,
+    carPlay: true,
+    criticalAlert: true,
+    provisional: true,
+    sound: true,
+  );
+  //! get fcm token
+  final token = await FirebaseMessaging.instance.getToken();
+
+  print("FCM TOKEN: $token");
   await Supabase.initialize(
     url: "https://iatbhhxrqyjuubfdhlst.supabase.co",
     anonKey:

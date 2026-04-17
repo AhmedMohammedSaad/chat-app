@@ -6,6 +6,7 @@ import 'package:chatapp/home/model/chat_item_model.dart';
 import 'package:chatapp/home/model/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -44,16 +45,24 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<String?> getUserImage() async {
-    final files = await supabase.storage
-        .from("images")
-        .list(path: "user/$userId");
-    final images = files.map((file) {
-      return supabase.storage
+    try {
+      final files = await supabase.storage
           .from("images")
-          .getPublicUrl("user/$userId/${file.name}");
-    }).toList();
+          .list(path: "user/$userId");
 
-    return images.first;
+      if (files.isEmpty) return null;
+
+      final images = files.map((file) {
+        return supabase.storage
+            .from("images")
+            .getPublicUrl("user/$userId/${file.name}");
+      }).toList();
+
+      return images.reversed.first;
+    } catch (e) {
+      debugPrint("Error fetching user image: $e");
+      return null;
+    }
   }
 
   Future saveImageToFireStore(String imageUrl) async {
@@ -79,11 +88,16 @@ class HomeCubit extends Cubit<HomeState> {
                 List<ChatItemModel> chats = [];
                 final docs = snapshot.docs.map((doc) async {
                   final data = doc.data();
+                  List users = data["users"] ?? [];
+                  log("users $users");
 
-                  String otherUserId = data["users"][0] == currentUser
-                      ? data["users"][1]
-                      : data["users"][0];
+                  if (users.length < 2) {
+                    throw Exception("Invalid chat users data");
+                  }
 
+                  String otherUserId = users[0] == currentUser
+                      ? users[1]
+                      : users[0];
                   final otherUserDoc = await FirebaseFirestore.instance
                       .collection("user")
                       .doc(otherUserId)
@@ -94,33 +108,42 @@ class HomeCubit extends Cubit<HomeState> {
                           docId: value.id,
                         );
                       });
+                  log("otherUserDoc ${otherUserDoc.name}");
 
                   return ChatItemModel.fromJson(data, otherUserDoc, doc.id);
                 }).toList();
                 chats = await Future.wait(docs);
+
                 final imageUrl = await getUserImage();
                 if (!isClosed) {
+                  final fcmToken = await FirebaseMessaging.instance.getToken();
+                  // 3 set data in firestore
+                  await FirebaseFirestore.instance
+                      .collection("user")
+                      .doc(currentUser)
+                      .update({"fcmToken": fcmToken});
                   emit(GetChatSuccess(chats: chats, imageUrl: imageUrl));
                 }
               } catch (e) {
+                log(e.toString());
                 if (!isClosed) emit(GetChatFailure(errorMessage: e.toString()));
               }
             },
             onError: (error) {
               if (!isClosed) {
                 emit(GetChatFailure(errorMessage: error.toString()));
-                debugPrint(error.toString());
+                log(error.toString());
               }
             },
           );
     } on FirebaseException catch (e) {
       if (!isClosed) {
-        debugPrint(e.message.toString());
+        log(e.message.toString());
         emit(GetChatFailure(errorMessage: e.message.toString()));
       }
     } catch (e) {
       if (!isClosed) {
-        debugPrint(e.toString());
+        log(e.toString());
         emit(GetChatFailure(errorMessage: e.toString()));
       }
     }

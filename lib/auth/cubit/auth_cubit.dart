@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chatapp/auth/view/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -37,11 +38,13 @@ class AuthCubit extends Cubit<AuthState> {
       );
       //2 get id
       final user = instance.currentUser!.uid;
+      final fcmToken = await FirebaseMessaging.instance.getToken();
       // 3 set data in firestore
       await FirebaseFirestore.instance.collection("user").doc(user).set({
         "id": user,
         "name": nameController.text,
         "email": emailController.text,
+        "fcmToken": fcmToken,
       });
       //!
       if (!context.mounted) return;

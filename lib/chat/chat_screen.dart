@@ -1,5 +1,9 @@
+import 'dart:developer';
+
+import 'package:chatapp/core/services/seend_messeging.dart';
 import 'package:chatapp/home/model/messages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../core/theme/theme_extension.dart';
@@ -39,6 +43,26 @@ class _ChatScreenState extends State<ChatScreen> {
         .update({
           "messages": FieldValue.arrayUnion([newMessage]),
         });
+    final chat = await FirebaseFirestore.instance
+        .collection("chats")
+        .doc(widget.chatId)
+        .get();
+
+    final currentUser = FirebaseAuth.instance.currentUser!.uid;
+    String otherUserId = chat['users'][0] == currentUser
+        ? chat['users'][1]
+        : chat['users'][0];
+    print("otherUserId: $otherUserId");
+    final fcmToken = await FirebaseFirestore.instance
+        .collection("user")
+        .doc(otherUserId)
+        .get();
+    await sendNotification(
+      chatId: widget.chatId,
+      message: text,
+      fcmToken: fcmToken['fcmToken'],
+      senderId: curentUserId,
+    );
 
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
@@ -100,7 +124,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   Text(
                     "Online",
-                    style: textStyles.chatTimeText.copyWith(color: colors.primary),
+                    style: textStyles.chatTimeText.copyWith(
+                      color: colors.primary,
+                    ),
                   ),
                 ],
               ),
@@ -162,9 +188,11 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.chat_bubble_outline,
-                              size: 60,
-                              color: colors.textSecondary.withValues(alpha: 0.3)),
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 60,
+                            color: colors.textSecondary.withValues(alpha: 0.3),
+                          ),
                           const SizedBox(height: 12),
                           Text(
                             "Say hello! 👋",
@@ -183,16 +211,21 @@ class _ChatScreenState extends State<ChatScreen> {
                       final msg = messages[index];
                       final isMe = msg.senderId == currentUserId;
                       return Align(
-                        alignment:
-                            isMe ? Alignment.centerRight : Alignment.centerLeft,
+                        alignment: isMe
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
                         child: Container(
                           constraints: BoxConstraints(
                             maxWidth: MediaQuery.of(context).size.width * 0.75,
                           ),
                           padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 16),
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
                           margin: const EdgeInsets.symmetric(
-                              vertical: 4, horizontal: 12),
+                            vertical: 4,
+                            horizontal: 12,
+                          ),
                           decoration: BoxDecoration(
                             gradient: isMe
                                 ? colors.msgGradientMe
@@ -224,8 +257,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             border: isMe
                                 ? null
                                 : Border.all(
-                                    color: colors.primaryBorder
-                                        .withValues(alpha: 0.3)),
+                                    color: colors.primaryBorder.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
                           ),
                           child: Text(
                             msg.text ?? "",
@@ -252,7 +287,8 @@ class _ChatScreenState extends State<ChatScreen> {
               color: colors.surface,
               border: Border(
                 top: BorderSide(
-                    color: colors.primaryBorder.withValues(alpha: 0.3)),
+                  color: colors.primaryBorder.withValues(alpha: 0.3),
+                ),
               ),
               boxShadow: [
                 BoxShadow(
@@ -276,7 +312,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         color: colors.background,
                         borderRadius: BorderRadius.circular(25),
                         border: Border.all(
-                            color: colors.primaryBorder.withValues(alpha: 0.4)),
+                          color: colors.primaryBorder.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -284,13 +321,15 @@ class _ChatScreenState extends State<ChatScreen> {
                           Expanded(
                             child: TextField(
                               controller: _messageController,
-                              style: textStyles.textButtonPrimary
-                                  .copyWith(color: colors.textPrimary),
+                              style: textStyles.textButtonPrimary.copyWith(
+                                color: colors.textPrimary,
+                              ),
                               decoration: InputDecoration(
                                 hintText: "Type a message...",
                                 hintStyle: textStyles.labelText.copyWith(
-                                  color: colors.textSecondary
-                                      .withValues(alpha: 0.5),
+                                  color: colors.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 border: InputBorder.none,
                                 focusedBorder: InputBorder.none,
@@ -301,8 +340,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.emoji_emotions_outlined,
-                                color: colors.textSecondary),
+                            icon: Icon(
+                              Icons.emoji_emotions_outlined,
+                              color: colors.textSecondary,
+                            ),
                             onPressed: () {},
                           ),
                         ],
@@ -326,7 +367,11 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.send, color: Colors.white, size: 20),
+                      child: const Icon(
+                        Icons.send,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                   ),
                 ],
